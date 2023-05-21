@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, width=device-width">
+        <title>Reversi</title>
+        <link href="/styles.css" rel="stylesheet">
+        <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <script> const module = {}; </script> <!--Hadle error with module-->
+        <script type="text/javascript" src="/lib.js"></script>
+        <script type="text/javascript" src="/reversi.js"></script>
+    </head>
+
+    <body style="margin: 30px; text-align: center;">
+        <a class="btn btn-primary" href="/" id="back">
+            Back to profile
+        </a>
+        <a class="btn btn-success" href="/reversi/logged" id="home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"></path>
+                </svg>
+            Home
+        </a>
+
+        <h1>Reversi</h1>
+
+        <div style="position: relative;">
+            <span class="wait" id="wait"></span>
+            <table class="board" cellpadding="0">
+                <div id="loading">
+                    Waiting for another player...
+                </div>
+                <tbody id="table">
+    
+                </tbody>
+                <tfoot>
+                    <tr style="height: 40px;">
+                        <td colspan="2" id="player1">
+                            <span >-</span>                    
+                        </td>
+                        <td id="reset_element" colspan="2">
+                            <button id="reset">Reset</button>
+                        </td>
+                        <td id="pass_element" colspan="2">
+                            <button id="move">Pass!</button>
+                        </td>
+                        <td colspan="2" id ="player2">
+                            <span >-</span>         
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="1" class="cell white" style="border:0px;">
+
+                        </td>
+                        <td colspan="1" id="white_count" class="score">
+
+                        </td>
+                        <td colspan="4" >  
+                            <a class="btn btn-danger" href="/reversi/game" id="new_game" style="display: none;">New Game</a>                    
+                        </td>
+                        <td colspan="1" id="black_count" class="score">
+
+                        </td>
+                        <td colspan="1" class="cell black" style="border:0px;">
+                            
+                        </td >
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+       
+
+        <div id="current_player" class="current_player" style="margin-bottom: 20px;">
+
+        </div>
+
+        <div id="end_game" class="end" style="display:none">
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const game = new Game()
+                window.game = game
+                draw_board(game)
+                redraw(game)
+
+
+                <% if (type === 'multiplayer') { %>
+                    document.getElementById("reset_element").style.display = "none"
+                    document.getElementById("pass_element").colSpan = 4
+                    document.getElementById("loading").style.display = "block"
+                    socket.emit("create", '<%= user.user.replace(/'/g,"\\'") %>')
+                    socket.on('gameStart', ({firstPlayer, secondPlayer}) => {
+                        if (firstPlayer.stoneColor === WHITE_STONE) {
+                            document.getElementById("player1").innerHTML = firstPlayer.name
+                            document.getElementById("player2").innerHTML = secondPlayer.name  
+                        }
+                        else{
+                            document.getElementById("player1").innerHTML = secondPlayer.name
+                            document.getElementById("player2").innerHTML = firstPlayer.name  
+                        }
+                        document.getElementById("loading").style.display = "none"
+                        game.setPlayers(firstPlayer,secondPlayer)
+                        game.startGame()
+                        redraw(game)
+                    })
+                    socket.on('lost_connection', () => {
+                        if (confirm('Opponent is disconnected. Do you want to leave?')) {
+                            window.location = '/reversi/logged'
+                        }
+                        else {
+                            game.gameReset(GAME_STATE_WAIT)
+                            game.setPlayers(null,null)
+                            redraw(game)
+                            document.getElementById("loading").style.display = "block"
+                            document.getElementById("wait").style.display = "none"
+                            socket.emit("recreate")
+                        }
+                    })
+                <% } else if (type === 'AI') { %>
+                    socket.on('connect', () => {
+                        document.getElementById("player1").innerHTML = "Computer"
+                        document.getElementById("player2").innerHTML = "Player"
+                        const firstPlayer = {type: PLAYER_TYPE_LOCAL, id: socket.id, stoneColor: BLACK_STONE}
+                        const secondPlayer = {type: PLAYER_TYPE_AI, id: "AI", stoneColor: WHITE_STONE}
+                        game.setPlayers(firstPlayer,secondPlayer)
+                        game.startGame()
+                        redraw(game)
+                    })
+                <% } %>
+
+
+            })    
+        </script>
+    </body>
+</html>
