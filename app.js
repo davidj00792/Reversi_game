@@ -29,35 +29,14 @@ app.use(bodyParser.urlencoded({extended:true}))
 app.use(session({ secret, resave: false, saveUninitialized: true}))
 
 app.get('/', (req,res) => {
-  res.render('pages/home')
-})
-app.get('/about', (req,res) => {
-  res.render('pages/about')
-})
-app.get('/work', (req,res) => {
-  res.render('pages/work')
-})
-app.get('/education', (req,res) => {
-  res.render('pages/education')
-})
-app.get('/experience', (req,res) => {
-  res.render('pages/experience')
-})
-app.get('/hobbies', (req,res) => {
-  res.render('pages/hobbies')
-})
-app.get('/resume', (req,res) => {
-  res.render('pages/resume')  
-})
-app.get('/reversi', (req, res) => {
-  res.render('pages/index') 
+  res.render('pages/index')
 })
 app.get('/reversi/game', (req, res) => {
   if(req.session.id in users) {
     res.render('pages/game', {user:users[req.session.id], type:'multiplayer'})}
   else {
     console.log("session not found")
-    res.redirect('/reversi')
+    res.redirect('/')
   }    
 })
 app.get('/reversi/game-ai', (req, res) => {
@@ -69,7 +48,7 @@ app.get('/reversi/logged', (req, res) => {
   }
   else {
     console.log("session not found")
-    res.redirect('/reversi')  
+    res.render('pages/index')
   }    
 })
 
