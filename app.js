@@ -36,7 +36,7 @@ app.get('/reversi/game', (req, res) => {
     res.render('pages/game', {user:users[req.session.id], type:'multiplayer'})}
   else {
     console.log("session not found")
-    res.redirect('/')
+    res.render('pages/index')
   }    
 })
 app.get('/reversi/game-ai', (req, res) => {
